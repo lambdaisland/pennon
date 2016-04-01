@@ -86,7 +86,8 @@ A complete example:
 ```clojure
 (ns my-app.core
   (:require [pennon.core :refer [wrap-feature-flags]]
-            [pennon.toggles :refer [query-params-toggle-factory]
+            [pennon.toggles :refer [query-params-toggle-factory])
+            [compojure.core :refer [defroutes GET]]))
 
 (def features #{:link-sharing :reporting :new-layout})
 (def default-enabled-flags #{:new-layout})
