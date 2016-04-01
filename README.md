@@ -1,6 +1,120 @@
-# pennon
+# Pennon
 
-##
+A feature flag library for Clojure.
+
+## Usage
+
+Feature flags in Pennon are identified with keywords.
+
+```clojure
+(def features #{:link-sharing :new-layout :reporting})
+```
+
+Feature flags are enabled or disabled by "toggles". A toggle is a function that
+takes the name of a feature flag, and returns true, false, or nil.
+
+Multiple toggles can be active at once. When a toggle returns true or false it
+switches the feature flag on or off. If it returns nil it leaves the feature
+flag in whatever state it was left in by previous toggles.
+
+For example, we could have three different toggles configured. One checks if a
+feature has been turned on or off globally, one checks if the current user has
+the feature enabled, and finally the last one checks for a query parameter that
+temporarily enables the features.
+
+The `:link-sharing` feature is still experimental, but the QA people are trying
+it out by adding a query parameter to the URI.
+
+The `:reporting` feature is mostly ready, and so we have given a few customers
+early access in exchange for feedback.
+
+The `:new-layout` has been rolled out, but it has made a high profile customer
+unhappy, so it's been disabled for this customer while we make some fixes.
+
+<table>
+  <tr>
+    <th></th>
+    <th>:link-sharing</th>
+    <th>:reporting</th>
+    <th>:new-layout</th>
+  </tr>
+  <tr>
+    <th>global</th>
+    <td>nil</td>
+    <td>nil</td>
+    <td>true</td>
+  </tr>
+  <tr>
+    <th>user</th>
+    <td>nil</td>
+    <td>true</td>
+    <td>false</td>
+  </tr>
+  <tr>
+    <th>query-param</th>
+    <td>true</td>
+    <td>nil</td>
+    <td>nil</td>
+  </tr>
+  <tr>
+    <th>(feature? x)</th>
+    <td>true</td>
+    <td>false</td>
+    <td>true</td>
+  </tr>
+</table>
+
+To use Pennon with Ring, use `pennon.core/wrap-feature-flags`, passing the Ring
+handler, the available feature flags, and the toggle factories to use.
+
+A toggle is a function that takes a Ring request map, and returns a toggle
+function, for example:
+
+```clojure
+(defn my-toggle-factory [req]
+  (fn [flag]
+    (= flag :link-sharing)))
+```
+
+This factory is called once per request, the inner function is then called once
+for each feature flag. This allows you to toggle based on the current request or
+session, and it gives you an opportunity to do one time setup like accessing a
+database.
+
+A complete example:
+
+```clojure
+(ns my-app.core
+  (:require [pennon.core :refer [wrap-feature-flags]]
+            [pennon.toggles :refer [query-params-toggle-factory]
+
+(def features #{:link-sharing :reporting :new-layout})
+(def default-enabled-flags #{:new-layout})
+
+(defn db-toggle-factory [_]
+  (let [enabled-features (db-fetch-enabled-features)]
+    (fn [flag]
+      (some #{flag} enabled-features))))
+
+(defn user-toggle-factory [req]
+  (let [enabled-features (fetch-user-features (-> req :session ::identity)]
+    (fn [flag]
+      (some #{flag} enabled-features))))
+
+(def feature-toggles
+  [(constantly default-enabled-flags) ;; use of a set as a hard-coded toggle function
+   db-toggle-factory
+   user-toggle-factory
+   query-params-toggle-factory ;; provided by pennon.toggles, checks for flag_on=.. and flag_off=... request params
+   ])
+
+(defroutes routes
+  (GET "/" [] (if (feature? :link-sharing) ,,, ) ))
+
+(def http-handler
+  (-> routes
+      (wrap-feature-flags features feature-toggles)))
+```
 
 ## License
 
