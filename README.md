@@ -58,9 +58,9 @@ unhappy, so it's been disabled for this customer while we make some fixes.
   </tr>
   <tr>
     <th>(feature? x)</th>
-    <td>true</td>
-    <td>false</td>
-    <td>true</td>
+    <td><strong>true</strong></td>
+    <td><strong>true</strong></td>
+    <td><strong>false</strong></td>
   </tr>
 </table>
 
