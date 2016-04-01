@@ -2,6 +2,9 @@
 
 A feature flag library for Clojure.
 
+Pennon is primarily intended for use with Ring, but can also be used elsewhere.
+It is based on a few simple concepts, making it highly composable and adaptable.
+
 ## Usage
 
 Feature flags in Pennon are identified with keywords.
@@ -67,8 +70,8 @@ unhappy, so it's been disabled for this customer while we make some fixes.
 To use Pennon with Ring, use `pennon.core/wrap-feature-flags`, passing the Ring
 handler, the available feature flags, and the toggle factories to use.
 
-A toggle is a function that takes a Ring request map, and returns a toggle
-function, for example:
+A toggle factory is a function that takes a Ring request map, and returns a
+toggle, for example:
 
 ```clojure
 (defn my-toggle-factory [req]
