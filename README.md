@@ -13,6 +13,16 @@ Feature flags in Pennon are identified with keywords.
 (def features #{:link-sharing :new-layout :reporting})
 ```
 
+In your code you can branch based on whether features are enabled or disabled:
+
+```clojure
+(if (feature? :new-layout)
+  (new-layout)
+  (old-layout))
+```
+
+This assumes you are using the Ring middleware and are inside a request handler.
+
 Feature flags are enabled or disabled by "toggles". A toggle is a function that
 takes the name of a feature flag, and returns true, false, or nil.
 
@@ -118,6 +128,19 @@ A complete example:
 (def http-handler
   (-> routes
       (wrap-feature-flags features feature-toggles)))
+```
+
+## Use outside Ring
+
+The `feature?` function checks `pennon.core/*features*`. The Ring middleware
+takes care of binding this. If you are using Pennon elsewhere you have to make
+sure that somewhere up the stack you wrap your code in a `binding` form.
+
+
+```clojure
+(binding [pennon.core/*features* (pennon.core/enabled-features feature-names toggle-fns)]
+  ,,,
+  )
 ```
 
 ## License
