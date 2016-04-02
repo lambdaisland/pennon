@@ -98,7 +98,7 @@ A complete example:
 
 ```clojure
 (ns my-app.core
-  (:require [pennon.core :refer [wrap-feature-flags]]
+  (:require [pennon.core :refer [wrap-feature-flags feature?]]
             [pennon.toggles :refer [query-params-toggle-factory])
             [compojure.core :refer [defroutes GET]]))
 
